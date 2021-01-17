@@ -19,12 +19,6 @@ h1 {
                 0 0 20px rgba(59, 36, 36, 0.2);
 }
 
-.folder {
-    overflow: hidden; 
-    visibility: hidden;
-    height: 0px;
-}
-
 ul {
     list-style: none;
 }
@@ -38,13 +32,25 @@ li {
     font-size: 20px;
 }
 
-span {
+li.open ~ .folder {
+    overflow: auto; 
+    visibility: visible;
+    height: auto;
+}
+
+li.close ~ .folder {
+    overflow: hidden; 
+    visibility: hidden;
+    height: 0px;
+}
+
+li span {
     pointer-events: none;
     font-weight: 500;
     letter-spacing: 1px;
 }
 
-i {
+li i {
     pointer-events: none;
     margin-right: 10px;
 }

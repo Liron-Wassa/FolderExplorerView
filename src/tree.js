@@ -8,19 +8,19 @@ class Node {
 
 class Tree {
 
-    constructor(value) {
-        if(!value) throw new Error('Tree constructor must be initialized with value');
+    constructor(folderName) {
+        if(!folderName) throw new Error('Tree constructor must be initialized with value');
 
-        const newNode = new Node(value);
+        const newNode = new Node(folderName);
         this.root = newNode;
     };
 
-    #isNotExistNode(value, arr) {
+    #isNodeNotExist(folderName, nodesList) {
 
-        for (let index = 0; index < arr.length; index++) {
-            const node = arr[index];
+        for (let index = 0; index < nodesList.length; index++) {
+            const node = nodesList[index];
 
-            if(node.name === value) {
+            if(node.name === folderName) {
                 return false;
             };
         };
@@ -28,10 +28,10 @@ class Tree {
         return true;
     };
 
-    insert(name, parentName) {
+    insert(parentFolderName, newFolderName) {
 
-        if(this.root.name === parentName && this.#isNotExistNode(name, this.root.childrens)) {
-            const newNode = new Node(name);
+        if(this.root.name === parentFolderName && this.#isNodeNotExist(newFolderName, this.root.childrens)) {
+            const newNode = new Node(newFolderName);
 
             newNode.parent = this.root;
             this.root.childrens.push(newNode);
@@ -45,8 +45,8 @@ class Tree {
         while(queues.length !== 0) {
             currentNode = queues.shift();
 
-            const foundNode = currentNode.childrens.find(node => {
-                if(node.name === parentName) {
+            const foundParentNode = currentNode.childrens.find(node => {
+                if(node.name === parentFolderName) {
                     return node;
                 }
                 else {
@@ -54,11 +54,11 @@ class Tree {
                 };
             });
 
-            if(foundNode && this.#isNotExistNode(name, foundNode.childrens)) {
-                const newNode = new Node(name);
+            if(foundParentNode && this.#isNodeNotExist(newFolderName, foundParentNode.childrens)) {
+                const newNode = new Node(newFolderName);
 
-                newNode.parent = foundNode;
-                foundNode.childrens.push(newNode);
+                newNode.parent = foundParentNode;
+                foundParentNode.childrens.push(newNode);
 
                 return newNode;
             };
@@ -70,12 +70,12 @@ class Tree {
     BFS() {
         
         let currentNode = this.root;
-        const results = [];
+        const allNodes = [];
         const queues = [currentNode];
         
         while(queues.length !== 0) {
             currentNode = queues.shift();
-            results.push(currentNode);
+            allNodes.push(currentNode);
 
             for (let index = 0; index < currentNode.childrens.length; index++) {
                 const node = currentNode.childrens[index];
@@ -84,6 +84,6 @@ class Tree {
 
         };
 
-        return results;
+        return allNodes;
     };
 };

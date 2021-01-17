@@ -1,109 +1,75 @@
-const filteredEntities = entities.map(entity => entity.id.split(/[\s:]+/));
-
-const tree = new Tree(filteredEntities[0][0]);
+const convertedIdsToEntities = entities.map(entity => entity.id.split(/[\s:]+/));
+const tree = new Tree(convertedIdsToEntities[0][0]);
 
 fillTreeWithEntities();
 
 function fillTreeWithEntities() {
-    for (let i = 0; i < filteredEntities.length; i++) {
-        const idEntities = filteredEntities[i];
+    for (let i = 0; i < convertedIdsToEntities.length; i++) {
+        const idEntities = convertedIdsToEntities[i];
     
         for (let j = 1; j < idEntities.length; j++) {
             const leftIdEntity = idEntities[j - 1];
             const rightIdEntity = idEntities[j];
             
-            tree.insert(rightIdEntity, leftIdEntity);
+            tree.insert(leftIdEntity, rightIdEntity);
         };  
     };
 };
 
-const documentFragment = document.createDocumentFragment();
-const folders = tree.BFS();
+renderFolders();
 
-renderRootFolder();
-
-function renderRootFolder() {
-    const [ul, li, span, i] = createHTMLElements(['ul', 'li', 'span', 'i']);
-
-    span.textContent = folders[0].name;
+function renderFolders() {
+    const folderElements = generateHtmlTemplate(tree.root);
     
-    li.addEventListener('click', openFolderHandler);
-
-    i.setAttribute('class', 'far fa-folder');
-    
-    li.append(i, span);
-    ul.append(li);
-    documentFragment.append(ul);
+    const foldersContainer = document.querySelector('.foldersContainer');
+    foldersContainer.innerHTML = folderElements;
 };
 
-function createHTMLElements(elementList) {
-    const htmlList = [];
-    let element;
+function generateHtmlTemplate(rootFolder = null, subFolders = []) {
+    let htmlElements = '';
 
-    for (const item of elementList) {
-        element = document.createElement(item);
-        htmlList.push(element);
+    if(rootFolder) {
+        htmlElements += `<ul class='folder'>`;
+        htmlElements += `<li class='close' onclick='openFolder.bind(this)(event)'>`;
+        htmlElements += `<i class='far fa-folder'></i>`;
+        htmlElements += `<span>${rootFolder.name}</span>`;
+        htmlElements += `</li>`;
+        htmlElements += generateHtmlTemplate(null, rootFolder.childrens);
+        htmlElements += `</ul>`;
     };
 
-    return htmlList;
-};
+    for (let index = 0; index < subFolders.length; index++) {    
+        const folder = subFolders[index];
 
-renderSubFolders();
+        htmlElements += `<ul class='folder'>`;
+        htmlElements += `<li class='close' onclick='openFolder.bind(this)(event)'>`;
+        htmlElements += `<i class='far fa-folder'></i>`;
+        htmlElements += `<span>${folder.name}</span>`;
+        htmlElements += `</li>`;
 
-function renderSubFolders() {  
-    for (let index = 1; index < folders.length; index++) {    
-        const folder = folders[index];
+        if(folder.childrens.length) {
+            htmlElements += generateHtmlTemplate(null, folder.childrens);
+        };
 
-        const [ul, li, span, i] = createHTMLElements(['ul', 'li', 'span', 'i']);
-
-        let nodeList = documentFragment.querySelectorAll('ul');
-        let parentIndex = findParentIndex(nodeList, folder.parent.name);
-
-        span.textContent = folder.name;
-        
-        li.addEventListener('click', openFolderHandler);
-        
-        i.setAttribute('class', 'far fa-folder');
-        ul.setAttribute('class', 'folder');
-        
-        li.append(i, span);
-        ul.append(li);
-        nodeList[parentIndex].append(ul);
+        htmlElements += `</ul>`;
     };
 
-    document.body.append(documentFragment);
+    return htmlElements;
 };
 
-function findParentIndex(nodeList, parentName) {
-    for (let i = 0; i < nodeList.length; i++) {
-        const li = nodeList[i].children;
-        
-        for (let j = 0; j < li.length; j++) {
-            const element = li[j];
-
-            if(element.children[1]?.innerHTML === parentName) return i;
-        };  
-    };
-};
-
-function openFolderHandler(event) {
+function openFolder(event) {
     event.stopPropagation();
-    
-    changeFolderStateStyle(event.target.children[0]);
 
-    for (let index = 1; index < this.parentElement.children.length; index++) {
-        const element = this.parentElement.children[index];
-        element.classList.toggle('folder');
-    };
-};
-
-function changeFolderStateStyle(folderIcon) {
-    if(folderIcon.className.endsWith('open')) {
-        folderIcon.classList.remove('fa-folder-open');
-        folderIcon.classList.add('fa-folder');
+    if(this.classList[0] === 'close') {
+        this.childNodes[0].classList.remove('fa-folder');
+        this.childNodes[0].classList.add('fa-folder-open');
+        this.classList.remove('close');
+        this.classList.add('open');
     }
     else {
-        folderIcon.classList.add('fa-folder-open');
-        folderIcon.classList.remove('fa-folder');
+        this.childNodes[0].classList.remove('fa-folder-open');
+        this.childNodes[0].classList.add('fa-folder');
+        this.classList.remove('open');
+        this.classList.add('close');
     };
 };
